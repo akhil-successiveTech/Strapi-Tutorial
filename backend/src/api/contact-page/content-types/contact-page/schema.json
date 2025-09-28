@@ -1,0 +1,29 @@
+{
+  "kind": "singleType",
+  "collectionName": "contact_pages",
+  "info": {
+    "singularName": "contact-page",
+    "pluralName": "contact-pages",
+    "displayName": "ContactPage"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "navbarLinks": {
+      "type": "component",
+      "component": "header.navbar",
+      "repeatable": true
+    },
+    "title": {
+      "type": "string"
+    },
+    "bodyContent": {
+      "type": "text"
+    },
+    "footer": {
+      "type": "string"
+    }
+  }
+}

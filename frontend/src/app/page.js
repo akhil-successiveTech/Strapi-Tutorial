@@ -1,52 +1,32 @@
-"use client"
-import { gql } from "@apollo/client";
+"use client";
+
 import { useQuery } from "@apollo/client/react";
-import Link from "next/link";
+import client from "../../lib/apollo";
+import { GET_HOME_PAGE } from "@/queries/homePage";
+import Navbar from "@/components/Navbar";
+import Hero from "@/components/Hero";
+import BodySection from "@/components/BodySection";
+import Footer from "@/components/Footer";
 
-const GET_ARTICLES = gql`
-  query {
-    articles(sort: "publishedAt:desc", pagination: { limit: 10 }) {
-      data {
-        id
-        attributes {
-          title
-          slug
-          content
-          category {
-            data {
-              attributes {
-                name
-                slug
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-export default function Home() {
-  const { loading, error, data } = useQuery(GET_ARTICLES);
+export default function HomePage() {
+  const { data, loading, error } = useQuery(GET_HOME_PAGE, { client });
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
+  if (error) return <p>Error loading data: {error.message}</p>;
+
+  const home = data.homePage;
 
   return (
-    <div>
-      <h1>Latest Articles</h1>
-      {data.articles.data.map((article) => (
-        <div key={article.id} style={{ marginBottom: "20px" }}>
-          <Link href={`/articles/${article.attributes.slug}`}>
-            <h2>{article.attributes.title}</h2>
-          </Link>
-          <p>Category: {article.attributes.category.data?.attributes.name}</p>
-        </div>
-      ))}
-
-      <div>
-        <Link href="/login">Login</Link> | <Link href="/signup">Signup</Link>
-      </div>
-    </div>
+    <>
+      <Navbar links={home.navbarLinks} />
+      {/* <Hero
+        title={home.heroTitle}
+        subtitle={home.heroSubtitle}
+        imageUrl={home.heroImage?.url || ""}
+        buttons={home.ctaButtons || []}
+      /> */}
+      <BodySection content={typeof home.bodyContent === "string" ? home.bodyContent : JSON.stringify(home.bodyContent)} />
+      <Footer text={home.footer || ""} />
+    </>
   );
 }

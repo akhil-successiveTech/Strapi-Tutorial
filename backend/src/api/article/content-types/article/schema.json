@@ -56,6 +56,13 @@
       "relation": "oneToMany",
       "target": "api::comment.comment",
       "mappedBy": "article"
+    },
+    "statusValue": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "published"
+      ]
     }
   }
 }

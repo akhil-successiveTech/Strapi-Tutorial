@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_header_navbars",
+  "info": {
+    "displayName": "navbar",
+    "icon": "check"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}
