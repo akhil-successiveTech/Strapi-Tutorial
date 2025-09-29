@@ -1,12 +1,14 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import ArticleList from "@/components/ArticleList";
 
+// Fetch only approved & published articles
 async function getArticles() {
   try {
-    const res = await fetch("http://localhost:1337/api/articles?populate=*", {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      "http://localhost:1337/api/articles?filters[isApproved][$eq]=true&filters[publishedAt][$notNull]=true&populate=*",
+      {
+        cache: "no-store",
+      }
+    );
 
     if (!res.ok) throw new Error("Failed to fetch articles");
 
@@ -23,12 +25,14 @@ export default async function ArticlesPage() {
 
   return (
     <>
-      <Navbar />
       <main style={{ padding: "50px 20px" }}>
         <h1>Latest Articles</h1>
-        <ArticleList articles={articles} />
+        {articles.length > 0 ? (
+          <ArticleList articles={articles} />
+        ) : (
+          <p>No articles have been published yet.</p>
+        )}
       </main>
-      <Footer />
     </>
   );
 }

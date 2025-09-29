@@ -1,12 +1,9 @@
 "use client";
-
 import { useQuery } from "@apollo/client/react";
 import client from "../../lib/apollo";
-import { GET_HOME_PAGE } from "@/queries/homePage";
-import Navbar from "@/components/Navbar";
+import { GET_HOME_PAGE } from "@/queries/homePage.js";
 import Hero from "@/components/Hero";
 import BodySection from "@/components/BodySection";
-import Footer from "@/components/Footer";
 
 export default function HomePage() {
   const { data, loading, error } = useQuery(GET_HOME_PAGE, { client });
@@ -16,17 +13,28 @@ export default function HomePage() {
 
   const home = data.homePage;
 
+  // Safely extract heroTitle and heroSubtitle as strings
+  let heroTitle = home.heroTitle;
+  if (typeof heroTitle === 'object' && heroTitle !== null) {
+    heroTitle = heroTitle.text || heroTitle.children?.[0]?.text || JSON.stringify(heroTitle);
+  }
+  let heroSubtitle = home.heroSubtitle;
+  if (typeof heroSubtitle === 'object' && heroSubtitle !== null) {
+    heroSubtitle = heroSubtitle.text || heroSubtitle.children?.[0]?.text || JSON.stringify(heroSubtitle);
+  }
+  // Safely extract heroImage URL
+  let heroImageUrl = home.heroImage?.data?.attributes?.url || home.heroImage?.url || '';
+
+  // Define Get Started and Logout buttons
+  const heroButtons = [
+    { label: "Get Started", url: "/get-started" },
+    { label: "Logout", onClick: () => { localStorage.removeItem("user"); localStorage.removeItem("jwt"); window.location.reload(); } }
+  ];
+
   return (
     <>
-      <Navbar links={home.navbarLinks} />
-      {/* <Hero
-        title={home.heroTitle}
-        subtitle={home.heroSubtitle}
-        imageUrl={home.heroImage?.url || ""}
-        buttons={home.ctaButtons || []}
-      /> */}
-      <BodySection content={typeof home.bodyContent === "string" ? home.bodyContent : JSON.stringify(home.bodyContent)} />
-      <Footer text={home.footer || ""} />
+      <Hero/>
+      <BodySection content={typeof home.bodyContent === 'object' ? JSON.stringify(home.bodyContent) : home.bodyContent} />
     </>
   );
 }

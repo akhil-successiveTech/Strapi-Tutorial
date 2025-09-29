@@ -12,6 +12,22 @@ export interface HeaderNavbar extends Struct.ComponentSchema {
   };
 }
 
+export interface SharedHero extends Struct.ComponentSchema {
+  collectionName: 'components_shared_heroes';
+  info: {
+    displayName: 'Hero';
+    icon: 'stack';
+  };
+  attributes: {
+    heroImage: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    heroSubtitle: Schema.Attribute.Blocks;
+    heroTitle: Schema.Attribute.Blocks;
+  };
+}
+
 export interface SharedMedia extends Struct.ComponentSchema {
   collectionName: 'components_shared_media';
   info: {
@@ -78,6 +94,7 @@ declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'header.navbar': HeaderNavbar;
+      'shared.hero': SharedHero;
       'shared.media': SharedMedia;
       'shared.quote': SharedQuote;
       'shared.rich-text': SharedRichText;

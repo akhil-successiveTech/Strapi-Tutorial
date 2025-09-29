@@ -22,21 +22,10 @@
     "content": {
       "type": "text"
     },
-    "heroTitle": {
-      "type": "blocks"
-    },
-    "heroSubtitle": {
-      "type": "blocks"
-    },
-    "heroImage": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+    "Hero": {
+      "type": "component",
+      "component": "shared.hero",
+      "repeatable": true
     },
     "ctaButtons": {
       "type": "component",

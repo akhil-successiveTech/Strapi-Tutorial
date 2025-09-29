@@ -11,6 +11,11 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "navbarLinks": {
+      "type": "component",
+      "component": "header.navbar",
+      "repeatable": true
+    },
     "title": {
       "type": "string"
     },
@@ -19,11 +24,6 @@
     },
     "bodyContent": {
       "type": "text"
-    },
-    "navbarLinks": {
-      "type": "component",
-      "component": "header.navbar",
-      "repeatable": true
     }
   }
 }

@@ -72,7 +72,6 @@ export default function ArticleDetailPage() {
 
   return (
     <>
-      <Navbar />
       <main style={{ padding: "50px 20px" }}>
         <h1>{article.title}</h1>
         <p>{article.content}</p>
@@ -136,7 +135,6 @@ export default function ArticleDetailPage() {
           {!user && <p style={{ marginTop: "20px" }}>Please <a href="/login">login</a> to comment.</p>}
         </section>
       </main>
-      <Footer />
     </>
   );
 }

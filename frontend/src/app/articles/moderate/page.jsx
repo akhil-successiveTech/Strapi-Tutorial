@@ -49,19 +49,17 @@ export default function ApproveArticlesPage() {
   if (user?.role?.type !== "super-admin") {
     return (
       <>
-        <Navbar />
         <main style={{ padding: "50px 20px" }}>
           <h1>Access Denied</h1>
           <p>You must be a super user to approve articles.</p>
         </main>
-        <Footer />
+        
       </>
     );
   }
 
   return (
     <>
-      <Navbar />
       <main style={{ padding: "50px 20px" }}>
         <h1>Approve Articles</h1>
         {articles.length === 0 ? (
@@ -81,7 +79,6 @@ export default function ApproveArticlesPage() {
           ))
         )}
       </main>
-      <Footer />
     </>
   );
 }

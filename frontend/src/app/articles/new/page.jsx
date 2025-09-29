@@ -1,7 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 export default function NewArticlePage() {
   const [title, setTitle] = useState("");
@@ -30,7 +28,8 @@ export default function NewArticlePage() {
             title,
             content,
             slug: title.toLowerCase().replace(/\s+/g, "-"),
-            published: false, // article requires superuser approval
+            // ✅ Do NOT set published date or isApproved
+            // Backend lifecycle hook will handle isApproved=false and draft mode
           },
         }),
       });
@@ -40,7 +39,7 @@ export default function NewArticlePage() {
         throw new Error(errorData.error?.message || "Failed to create article");
       }
 
-      alert("Article submitted for approval!");
+      alert("Article submitted for approval! Only superuser can publish.");
       setTitle("");
       setContent("");
     } catch (err) {
@@ -51,7 +50,6 @@ export default function NewArticlePage() {
 
   return (
     <>
-      <Navbar />
       <main style={{ padding: "50px 20px", maxWidth: "800px", margin: "0 auto" }}>
         <h1 style={{ marginBottom: "30px", textAlign: "center" }}>Submit a New Article</h1>
 
@@ -105,7 +103,6 @@ export default function NewArticlePage() {
           </p>
         )}
       </main>
-      <Footer />
     </>
   );
 }

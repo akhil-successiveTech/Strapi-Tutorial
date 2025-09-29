@@ -17,10 +17,8 @@ export default function ContactPage() {
 
   return (
     <>
-      <Navbar links={contact.navbarLinks} />
       <h1 style={{ textAlign: "center", margin: "50px 0" }}>{contact.title}</h1>
       <BodySection content={typeof contact.bodyContent === "string" ? contact.bodyContent : JSON.stringify(contact.bodyContent)} />
-      <Footer text={contact.footer || ""} />
     </>
   );
 }

@@ -28,6 +28,10 @@
       "relation": "manyToOne",
       "target": "api::author.author",
       "inversedBy": "comments"
+    },
+    "isApproved": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
