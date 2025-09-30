@@ -2,22 +2,53 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client/react";
-import client from "../../lib/apollo";
 import { GET_NAVBAR_LINKS } from "@/queries/navbar";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    const loadUserFromStorage = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+
+    // Handle token from URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      localStorage.setItem("jwt", token);
+
+      fetch("http://localhost:1337/api/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(res => res.json())
+        .then(userData => {
+          localStorage.setItem("user", JSON.stringify(userData));
+          setUser(userData);
+          window.history.replaceState({}, "", window.location.pathname);
+        });
+    } else {
+      loadUserFromStorage();
+    }
+
+    // Listen for storage changes in other tabs
+    const handleStorage = (event) => {
+      if (event.key === "user" || event.key === "jwt") loadUserFromStorage();
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("jwt");
     localStorage.removeItem("user");
     setUser(null);
-    window.location.href = "/";
+  };
+
+  const handleGoogleLogin = () => {
+    const callbackUrl = encodeURIComponent("http://localhost:3000");
+    window.location.href = `http://localhost:1337/api/connect/google?callbackUrl=${callbackUrl}`;
   };
 
   const btnStyle = {
@@ -28,15 +59,10 @@ export default function Navbar() {
     padding: "8px 16px",
     cursor: "pointer",
     fontWeight: 500,
+    marginLeft: "10px",
   };
 
-  // Fetch navbar links from Strapi
-  const { data, loading, error } = useQuery(GET_NAVBAR_LINKS, { client });
-
-  if (loading) return <nav style={navStyle}><p>Loading...</p></nav>;
-  if (error) return <nav style={navStyle}><p>Error loading navbar</p></nav>;
-
-  // ✅ Correct path: homePage.navbarLinks
+  const { data, loading, error } = useQuery(GET_NAVBAR_LINKS);
   const navLinks = data?.homePage?.navbarLinks || [];
 
   return (
@@ -53,13 +79,24 @@ export default function Navbar() {
           <>
             <Link href="/login" style={{ margin: "0 10px" }}>Login</Link>
             <Link href="/signup" style={{ margin: "0 10px" }}>Signup</Link>
+            <button onClick={handleGoogleLogin} style={btnStyle}>
+              Login with Google
+            </button>
           </>
         ) : (
-          <button onClick={handleLogout} style={btnStyle}>
-            Logout
-          </button>
+          <>
+            <span style={{ margin: "0 10px" }}>
+              Hello, {user.username || user.email}
+            </span>
+            <button onClick={handleLogout} style={btnStyle}>
+              Logout
+            </button>
+          </>
         )}
       </div>
+
+      {loading && <p>Loading...</p>}
+      {error && <p>Error loading navbar</p>}
     </nav>
   );
 }

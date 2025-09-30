@@ -1,10 +1,8 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,12 +24,14 @@ export default function LoginPage() {
         throw new Error(data?.error?.message || "Login failed");
       }
 
-      // Save JWT + User in localStorage
+      // ✅ Save JWT + User in localStorage
       localStorage.setItem("jwt", data.jwt);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       alert("Login successful!");
-      router.push("/articles"); // redirect to articles
+
+      // ✅ Full reload so Navbar sees updated login state
+      window.location.href = "/articles";
     } catch (err) {
       console.error("Login error:", err);
       setError(err.message);

@@ -1,12 +1,12 @@
 "use client";
 import { useQuery } from "@apollo/client/react";
-import client from "../../lib/apollo";
+import { createApolloClient } from "../../lib/apollo";
 import { GET_HOME_PAGE } from "@/queries/homePage.js";
 import Hero from "@/components/Hero";
 import BodySection from "@/components/BodySection";
 
 export default function HomePage() {
-  const { data, loading, error } = useQuery(GET_HOME_PAGE, { client });
+  const { data, loading, error } = useQuery(GET_HOME_PAGE, { createApolloClient });
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error loading data: {error.message}</p>;

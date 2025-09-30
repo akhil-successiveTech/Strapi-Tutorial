@@ -1,13 +1,15 @@
-// src/lib/apolloClient.js
 import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client";
 
-const client = new ApolloClient({
-  link: new HttpLink({
-    uri: "http://localhost:1337/graphql", // Strapi GraphQL endpoint
-    // You can add headers if needed, e.g., Authorization
-    // headers: { Authorization: `Bearer ${TOKEN}` }
-  }),
-  cache: new InMemoryCache(),
-});
+export function createApolloClient() {
+  const token = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
 
-export default client;
+  return new ApolloClient({
+    link: new HttpLink({
+      uri: "http://localhost:1337/graphql",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    }),
+    cache: new InMemoryCache(),
+  });
+}
