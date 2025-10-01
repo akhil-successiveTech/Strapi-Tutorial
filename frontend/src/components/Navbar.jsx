@@ -3,9 +3,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client/react";
 import { GET_NAVBAR_LINKS } from "@/queries/navbar";
+import { useRouter } from "next/navigation";
+
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     const loadUserFromStorage = () => {
@@ -43,13 +46,15 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("jwt");
     localStorage.removeItem("user");
+    
     setUser(null);
+    router.push("/"); 
   };
 
-  const handleGoogleLogin = () => {
-    const callbackUrl = encodeURIComponent("http://localhost:3000");
-    window.location.href = `http://localhost:1337/api/connect/google?callbackUrl=${callbackUrl}`;
-  };
+  const handleGoogleSignup = () => {
+  const callbackUrl = encodeURIComponent("http://localhost:3000");
+  window.location.href = `http://localhost:1337/api/connect/google?callbackUrl=${callbackUrl}`;
+};
 
   const btnStyle = {
     background: "#ff6600",
@@ -79,8 +84,8 @@ export default function Navbar() {
           <>
             <Link href="/login" style={{ margin: "0 10px" }}>Login</Link>
             <Link href="/signup" style={{ margin: "0 10px" }}>Signup</Link>
-            <button onClick={handleGoogleLogin} style={btnStyle}>
-              Login with Google
+            <button onClick={handleGoogleSignup} style={btnStyle}>
+              Signup with Google
             </button>
           </>
         ) : (
@@ -93,6 +98,7 @@ export default function Navbar() {
             </button>
           </>
         )}
+
       </div>
 
       {loading && <p>Loading...</p>}

@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { useParams, useRouter } from "next/navigation";
 
 export default function ArticleDetailPage() {
   const { slug } = useParams();
+  const router = useRouter();
+
   const [article, setArticle] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -18,13 +18,20 @@ export default function ArticleDetailPage() {
 
     async function fetchArticle() {
       const res = await fetch(
-        `http://localhost:1337/api/articles?filters[slug][$eq]=${slug}&populate=comments.user`
+        `http://localhost:1337/api/articles?filters[slug][$eq]=${slug}&populate=*,comments.user`
       );
       const data = await res.json();
       if (data.data.length > 0) {
-        const art = { id: data.data[0].id, ...data.data[0].attributes };
+        const artData = data.data[0];
+        const art = {
+          id: artData.id,
+          title: artData.attributes.title,
+          content: artData.attributes.content,
+          image: artData.attributes.image?.data?.attributes?.url,
+          comments: artData.attributes.comments || [],
+        };
         setArticle(art);
-        setComments(art.comments || []);
+        setComments(art.comments);
       }
     }
 
@@ -68,73 +75,89 @@ export default function ArticleDetailPage() {
     }
   };
 
-  if (!article) return <p>Loading...</p>;
+  if (!article)
+    return <p className="text-center mt-10 text-gray-500">Loading...</p>;
 
   return (
-    <>
-      <main style={{ padding: "50px 20px" }}>
-        <h1>{article.title}</h1>
-        <p>{article.content}</p>
+    <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
 
-        <section style={{ marginTop: "40px" }}>
-          <h2>Comments</h2>
-          {comments.length === 0 && <p>No comments yet.</p>}
-          <ul>
-            {comments.map((comment) => (
-              <li key={comment.id}>
-                <strong>{comment.user?.username || "Anonymous"}:</strong> {comment.text}
-              </li>
-            ))}
-          </ul>
+      {article.image && (
+        <img
+          src={`http://localhost:1337${article.image}`}
+          alt={article.title}
+          className="w-full max-h-96 object-cover rounded-lg mb-6"
+        />
+      )}
 
-          {user && (
-            <>
-              {!showCommentBox && (
-                <button
-                  onClick={() => setShowCommentBox(true)}
-                  style={{
-                    background: "#0070f3",
-                    color: "#fff",
-                    border: "none",
-                    padding: "8px 14px",
-                    borderRadius: "5px",
-                    marginTop: "10px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Add Comment
-                </button>
-              )}
-              {showCommentBox && (
-                <div style={{ marginTop: "20px" }}>
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Write your comment..."
-                    style={{ width: "100%", padding: "10px" }}
-                  />
+      <p className="text-lg mb-10 whitespace-pre-line">{article.content}</p>
+
+      {/* Comments Section */}
+      <section className="mt-10">
+        <h2 className="text-2xl font-semibold mb-4">Comments</h2>
+
+        {comments.length === 0 && (
+          <p className="text-gray-500 mb-4">No comments yet.</p>
+        )}
+
+        <ul className="space-y-3">
+          {comments.map((comment) => (
+            <li
+              key={comment.id}
+              className="border p-3 rounded-md bg-gray-50"
+            >
+              <strong className="text-gray-800">
+                {comment.user?.username || "Anonymous"}:
+              </strong>{" "}
+              {comment.text}
+            </li>
+          ))}
+        </ul>
+
+        {/* Add Comment */}
+        {user ? (
+          <>
+            {!showCommentBox && (
+              <button
+                onClick={() => setShowCommentBox(true)}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              >
+                Add Comment
+              </button>
+            )}
+
+            {showCommentBox && (
+              <div className="mt-4 flex flex-col gap-2">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write your comment..."
+                  className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  rows={4}
+                />
+                <div className="flex gap-2">
                   <button
                     onClick={handleAddComment}
-                    style={{
-                      marginTop: "10px",
-                      background: "#0070f3",
-                      color: "#fff",
-                      border: "none",
-                      padding: "8px 14px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
                   >
                     Post Comment
                   </button>
+                  <button
+                    onClick={() => setShowCommentBox(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+                  >
+                    Cancel
+                  </button>
                 </div>
-              )}
-            </>
-          )}
-
-          {!user && <p style={{ marginTop: "20px" }}>Please <a href="/login">login</a> to comment.</p>}
-        </section>
-      </main>
-    </>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="mt-4 text-gray-600">
+            Please <a href="/login" className="text-blue-600 underline">login</a> to comment.
+          </p>
+        )}
+      </section>
+    </main>
   );
 }

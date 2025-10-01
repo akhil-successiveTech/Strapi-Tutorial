@@ -1,15 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation"; // Next.js router
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default function Signup() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const formWrapper = { maxWidth: "400px", margin: "100px auto", padding: "30px", border: "1px solid #ccc", borderRadius: "10px", textAlign: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" };
-  const inputStyle = { width: "100%", padding: "10px", margin: "10px 0", borderRadius: "5px", border: "1px solid #ccc" };
-  const btnStyle = { width: "100%", padding: "12px", marginTop: "15px", borderRadius: "5px", border: "none", background: "#ff6600", color: "#fff", cursor: "pointer", fontWeight: 500 };
 
   const handleSignup = async () => {
     try {
@@ -37,12 +36,37 @@ export default function Signup() {
   };
 
   return (
-    <div style={formWrapper}>
-      <h2>Signup</h2>
-      <input style={inputStyle} placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
-      <input style={inputStyle} placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-      <input style={inputStyle} type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
-      <button style={btnStyle} onClick={handleSignup}>Signup</button>
+    <div className="flex flex-col min-h-screen">
+
+      {/* Main Content */}
+      <main className="flex-grow flex items-center justify-center">
+        <div className="max-w-md w-full mx-auto p-6 border border-gray-300 rounded-lg text-center shadow-sm">
+          <h2 className="mb-5 text-2xl font-semibold">Signup</h2>
+
+          <input
+            className="w-full p-3 mb-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Username"
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            className="w-full p-3 mb-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Email"
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            className="w-full p-3 mb-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
+            onClick={handleSignup}
+            className="w-full p-3 mt-3 rounded-md bg-orange-500 text-white font-medium cursor-pointer hover:bg-orange-600 transition"
+          >
+            Signup
+          </button>
+        </div>
+      </main>
     </div>
   );
 }

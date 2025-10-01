@@ -28,8 +28,6 @@ export default function NewArticlePage() {
             title,
             content,
             slug: title.toLowerCase().replace(/\s+/g, "-"),
-            // ✅ Do NOT set published date or isApproved
-            // Backend lifecycle hook will handle isApproved=false and draft mode
           },
         }),
       });
@@ -49,60 +47,48 @@ export default function NewArticlePage() {
   };
 
   return (
-    <>
-      <main style={{ padding: "50px 20px", maxWidth: "800px", margin: "0 auto" }}>
-        <h1 style={{ marginBottom: "30px", textAlign: "center" }}>Submit a New Article</h1>
+    <main className="px-5 py-12 max-w-3xl mx-auto">
+      <h1 className="mb-8 text-center text-3xl font-bold text-gray-800">
+        Submit a New Article
+      </h1>
 
-        {user ? (
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            <input
-              type="text"
-              placeholder="Article Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              style={{
-                padding: "10px",
-                fontSize: "1rem",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
-            />
-            <textarea
-              placeholder="Article Content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={8}
-              required
-              style={{
-                padding: "10px",
-                fontSize: "1rem",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                background: "#0070f3",
-                color: "white",
-                padding: "12px",
-                border: "none",
-                borderRadius: "5px",
-                fontSize: "1rem",
-                fontWeight: 500,
-                cursor: "pointer",
-              }}
-            >
-              Submit
-            </button>
-          </form>
-        ) : (
-          <p style={{ textAlign: "center", marginTop: "20px" }}>
-            Please <a href="/login" style={{ color: "#0070f3", textDecoration: "underline" }}>login</a> to submit an article.
-          </p>
-        )}
-      </main>
-    </>
+      {user ? (
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-5 bg-white p-6 rounded-lg shadow-md"
+        >
+          <input
+            type="text"
+            placeholder="Article Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            className="p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+          <textarea
+            placeholder="Article Content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={8}
+            required
+            className="p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md font-medium transition"
+          >
+            Submit
+          </button>
+        </form>
+      ) : (
+        <p className="text-center mt-6 text-gray-700">
+          Please{" "}
+          <a href="/login" className="text-blue-600 underline">
+            login
+          </a>{" "}
+          to submit an article.
+        </p>
+      )}
+    </main>
   );
 }

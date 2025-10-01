@@ -8,22 +8,21 @@ export default function ArticleList({ articles }) {
   const [username, setUsername] = useState("Anonymous");
 
   useEffect(() => {
-  const storedUser = localStorage.getItem("user");
-  const jwt = localStorage.getItem("jwt");
+    const storedUser = localStorage.getItem("user");
+    const jwt = localStorage.getItem("jwt");
 
-  if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedUser) setUser(JSON.parse(storedUser));
 
-  if (jwt) {
-    try {
-      const payload = JSON.parse(atob(jwt.split(".")[1]));
-      console.log("Decoded JWT payload:", payload); // <-- added console.log
-      setUserId(payload.id); // Strapi user ID
-      setUsername(payload.username || payload.email || "Anonymous");
-    } catch (err) {
-      console.error("Error decoding JWT:", err);
+    if (jwt) {
+      try {
+        const payload = JSON.parse(atob(jwt.split(".")[1]));
+        setUserId(payload.id);
+        setUsername(payload.username || payload.email || "Anonymous");
+      } catch (err) {
+        console.error("Error decoding JWT:", err);
+      }
     }
-  }
-}, []);
+  }, []);
 
   const isSuperUser = user?.role?.type === "super-admin";
 
@@ -46,100 +45,111 @@ export default function ArticleList({ articles }) {
   };
 
   return (
-    <div>
-      {articles.map((article) => (
-        <div
-          key={article.id}
-          style={{
-            marginBottom: "30px",
-            border: "1px solid #ccc",
-            padding: "20px",
-            borderRadius: "10px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          }}
-        >
-          <Link href={`/articles/${article.slug}`}>
-            <h2 style={{ marginBottom: "10px" }}>{article.title}</h2>
-          </Link>
-          <p><strong>Excerpt:</strong> {article.excerpt}</p>
-          {article.category && <p><strong>Category:</strong> {article.category.name}</p>}
-          <p><strong>Published At:</strong> {new Date(article.publishedAt).toLocaleDateString()}</p>
-          <p><strong>Updated At:</strong> {new Date(article.updatedAt).toLocaleDateString()}</p>
+    <div className="grid gap-8 md:grid-cols-2">
+      {articles.map((article) => {
+        // Use coverImage instead of cover
+        const coverData = article.coverImage;
+        console.log(coverData);
+        const coverUrl = coverData
+          ? coverData.formats?.medium?.url || coverData.url
+          : "/default-cover.jpg";
 
-          {/* Comment Button */}
-          {user && (
-            <Link href={`/articles/${article.slug}/comment`}>
-              <button style={commentBtn}>Comment</button>
+        return (
+          <div
+            key={article.id}
+            className="bg-white border rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden"
+          >
+            {/* Cover Image */}
+            <Link href={`/articles/${article.slug}`}>
+              <img
+                src={`http://localhost:1337${coverUrl}`}
+                alt={article.title}
+                className="w-full h-56 object-cover"
+              />
             </Link>
-          )}
 
-          {/* Admin Actions */}
-          {isSuperUser && (
-            <div style={{ marginTop: "15px" }}>
-              <Link href={`/articles/edit/${article.id}`}>
-                <button style={actionBtn}>Edit</button>
+            <div className="p-5">
+              {/* Title */}
+              <Link href={`/articles/${article.slug}`}>
+                <h2 className="text-xl font-semibold mb-2 hover:text-blue-600 transition-colors">
+                  {article.title}
+                </h2>
               </Link>
-              <button
-                onClick={() => handleDelete(article.id)}
-                style={{ ...actionBtn, background: "#ff4444" }}
-              >
-                Delete
-              </button>
-            </div>
-          )}
 
-          {/* Elegant Comments Display */}
-          {article.comments && article.comments.length > 0 && (
-            <div style={{ marginTop: "20px" }}>
-              <h3 style={{ marginBottom: "10px" }}>Comments:</h3>
-              {article.comments.map((comment) => {
-                // Determine username: use comment.user from Strapi or fallback to logged-in user if it matches
-                const commentUsername =
-                  comment.user?.username || (comment.user?.id === userId ? username : "Anonymous");
+              {/* Excerpt */}
+              <p className="text-gray-700 mb-3">{article.excerpt}</p>
 
-                return (
-                  <div
-                    key={comment.id}
-                    style={{
-                      background: "#f9f9f9",
-                      padding: "10px 15px",
-                      marginBottom: "10px",
-                      borderRadius: "8px",
-                      borderLeft: "4px solid #0070f3",
-                    }}
+              {/* Category */}
+              {article.category && (
+                <p className="text-sm text-gray-500 mb-1">
+                  <strong>Category:</strong> {article.category.name}
+                </p>
+              )}
+
+              {/* Published / Updated */}
+              <p className="text-sm text-gray-500">
+                <strong>Published:</strong>{" "}
+                {new Date(article.publishedAt).toLocaleDateString()}
+              </p>
+              <p className="text-sm text-gray-500 mb-3">
+                <strong>Updated:</strong>{" "}
+                {new Date(article.updatedAt).toLocaleDateString()}
+              </p>
+
+              {/* Comment Button */}
+              {user && (
+                <Link href={`/articles/${article.slug}/comment`}>
+                  <button className="bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-700 transition">
+                    Comment
+                  </button>
+                </Link>
+              )}
+
+              {/* Admin Actions */}
+              {isSuperUser && (
+                <div className="mt-3 flex">
+                  <Link href={`/articles/edit/${article.id}`}>
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-700 transition">
+                      Edit
+                    </button>
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(article.id)}
+                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
                   >
-                    <p style={{ margin: 0, fontWeight: 500 }}>{commentUsername}</p>
-                    <p style={{ margin: "5px 0 0 0" }}>{comment.content}</p>
-                    <small style={{ color: "#555" }}>{new Date(comment.createdAt).toLocaleString()}</small>
-                  </div>
-                );
-              })}
+                    Delete
+                  </button>
+                </div>
+              )}
+
+              {/* Comments */}
+              {article.comments && article.comments.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="font-semibold mb-2">Comments:</h3>
+                  {article.comments.map((comment) => {
+                    const commentUsername =
+                      comment.user?.username ||
+                      (comment.user?.id === userId ? username : "Anonymous");
+
+                    return (
+                      <div
+                        key={comment.id}
+                        className="bg-gray-100 p-3 mb-2 rounded-md border-l-4 border-blue-500"
+                      >
+                        <p className="font-medium">{commentUsername}</p>
+                        <p>{comment.content}</p>
+                        <small className="text-gray-600">
+                          {new Date(comment.createdAt).toLocaleString()}
+                        </small>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
-
-const actionBtn = {
-  background: "#0070f3",
-  color: "#fff",
-  border: "none",
-  borderRadius: "5px",
-  padding: "6px 12px",
-  marginRight: "10px",
-  cursor: "pointer",
-  fontWeight: 500,
-};
-
-const commentBtn = {
-  background: "#28a745",
-  color: "#fff",
-  border: "none",
-  borderRadius: "5px",
-  padding: "6px 12px",
-  marginTop: "10px",
-  cursor: "pointer",
-  fontWeight: 500,
-};

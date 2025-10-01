@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
@@ -39,65 +40,42 @@ export default function LoginPage() {
   };
 
   return (
-    <>
-      {/* Login Form */}
-      <div style={container}>
-        <h1 style={{ marginBottom: "20px" }}>Login</h1>
-        <form onSubmit={handleSubmit} style={formStyle}>
-          <input
-            type="text"
-            placeholder="Email or Username"
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            style={inputStyle}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={inputStyle}
-            required
-          />
-          <button type="submit" style={buttonStyle}>Login</button>
-        </form>
-        {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
-      </div>
-    </>
+    <div className="flex flex-col min-h-screen">
+
+      {/* Main Content */}
+      <main className="flex-grow flex items-center justify-center">
+        <div className="max-w-md w-full mx-auto p-6 border border-gray-300 rounded-lg text-center shadow-sm">
+          <h1 className="mb-5 text-2xl font-semibold">Login</h1>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <input
+              type="text"
+              placeholder="Email or Username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+              className="p-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="p-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="submit"
+              className="p-3 rounded-md bg-blue-600 text-white text-base font-semibold cursor-pointer hover:bg-blue-700 transition"
+            >
+              Login
+            </button>
+          </form>
+
+          {error && <p className="text-red-600 mt-3">{error}</p>}
+        </div>
+      </main>
+
+    </div>
   );
 }
-
-// Styles
-const container = {
-  maxWidth: "400px",
-  margin: "100px auto", // push form down below navbar
-  padding: "20px",
-  border: "1px solid #ccc",
-  borderRadius: "8px",
-  textAlign: "center",
-};
-
-const formStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "12px",
-};
-
-const inputStyle = {
-  padding: "10px",
-  borderRadius: "5px",
-  border: "1px solid #ccc",
-  fontSize: "16px",
-};
-
-const buttonStyle = {
-  padding: "10px",
-  borderRadius: "5px",
-  border: "none",
-  background: "#0070f3",
-  color: "#fff",
-  fontSize: "16px",
-  cursor: "pointer",
-  fontWeight: 600,
-};

@@ -3,9 +3,7 @@
 import { useQuery } from "@apollo/client/react";
 import { createApolloClient } from "../../../lib/apollo";
 import { GET_CONTACT_PAGE } from "@/queries/contactPage";
-import Navbar from "@/components/Navbar";
 import BodySection from "@/components/BodySection";
-import Footer from "@/components/Footer";
 
 export default function ContactPage() {
   const { data, loading, error } = useQuery(GET_CONTACT_PAGE, { createApolloClient });
@@ -20,7 +18,7 @@ export default function ContactPage() {
 
       {/* Main content */}
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl sm:text-5xl text-center mb-10 font-bold text-gray-800">
+        <h1 className="text-4xl sm:text-5xl text-center mb-10 text-gray-800">
           {contact.title}
         </h1>
         <div className="max-w-4xl mx-auto">
