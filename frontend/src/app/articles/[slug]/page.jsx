@@ -1,163 +1,97 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+
+const API_URL = "http://localhost:1337/api";
 
 export default function ArticleDetailPage() {
   const { slug } = useParams();
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const previewSecret = searchParams.get("preview_secret");
+  const isPreview = previewSecret === process.env.NEXT_PUBLIC_PREVIEW_SECRET;
 
   const [article, setArticle] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
-  const [showCommentBox, setShowCommentBox] = useState(false);
-  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    if (!slug) return;
+    let aborted = false;
 
     async function fetchArticle() {
-      const res = await fetch(
-        `http://localhost:1337/api/articles?filters[slug][$eq]=${slug}&populate=*,comments.user`
-      );
-      const data = await res.json();
-      if (data.data.length > 0) {
+      try {
+        const params = new URLSearchParams();
+        params.set("filters[slug][$eq]", slug);
+        // populate image fully and comments -> user (optional)
+        params.set("populate[image]", "*");
+        params.set("populate[comments][populate]", "user");
+
+        if (!isPreview) {
+          params.set("filters[isApproved][$eq]", "true");
+        }
+
+        const url = `${API_URL}/articles?${params.toString()}`;
+        console.log("Fetching article URL:", url);
+
+        const res = await fetch(url);
+        const data = await res.json();
+        console.log("Strapi response:", data);
+
+        if (aborted) return;
+
+        if (!data?.data || data.data.length === 0) {
+          setArticle(null);
+          setLoading(false);
+          return;
+        }
+
         const artData = data.data[0];
-        const art = {
+        const imagePath = artData.attributes.image?.data?.attributes?.url || null;
+
+        setArticle({
           id: artData.id,
+          slug: artData.attributes.slug,
           title: artData.attributes.title,
+          // If using Rich Text (Strapi WYSIWYG), use innerHTML below
           content: artData.attributes.content,
-          image: artData.attributes.image?.data?.attributes?.url,
-          comments: artData.attributes.comments || [],
-        };
-        setArticle(art);
-        setComments(art.comments);
+          image: imagePath,
+        });
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching article:", err);
+        if (!aborted) setLoading(false);
       }
     }
 
     fetchArticle();
-  }, [slug]);
+    return () => {
+      aborted = true;
+    };
+  }, [slug, isPreview]);
 
-  const handleAddComment = async () => {
-    if (!newComment.trim()) return;
-    if (!user) return alert("You must be logged in to comment.");
+  if (loading) return <p className="text-center mt-10 text-gray-500">Loading...</p>;
+  if (!article) return <p className="text-center mt-10 text-red-500 text-xl">Article not found.</p>;
 
-    const jwt = localStorage.getItem("jwt");
-
-    try {
-      const res = await fetch("http://localhost:1337/api/comments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: JSON.stringify({
-          data: {
-            text: newComment,
-            article: article.id,
-            user: user.id,
-          },
-        }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error?.message || "Failed to add comment");
-      }
-
-      const result = await res.json();
-      setComments([...comments, { id: result.data.id, ...result.data.attributes }]);
-      setNewComment("");
-      setShowCommentBox(false);
-    } catch (err) {
-      console.error(err);
-      alert(err.message);
-    }
-  };
-
-  if (!article)
-    return <p className="text-center mt-10 text-gray-500">Loading...</p>;
+  const imgSrc = article.image
+    ? article.image.startsWith("http")
+      ? article.image
+      : `http://localhost:1337${article.image}`
+    : null;
 
   return (
     <main className="max-w-4xl mx-auto p-6">
       <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
 
-      {article.image && (
+      {imgSrc && (
         <img
-          src={`http://localhost:1337${article.image}`}
+          src={imgSrc}
           alt={article.title}
           className="w-full max-h-96 object-cover rounded-lg mb-6"
         />
       )}
 
-      <p className="text-lg mb-10 whitespace-pre-line">{article.content}</p>
-
-      {/* Comments Section */}
-      <section className="mt-10">
-        <h2 className="text-2xl font-semibold mb-4">Comments</h2>
-
-        {comments.length === 0 && (
-          <p className="text-gray-500 mb-4">No comments yet.</p>
-        )}
-
-        <ul className="space-y-3">
-          {comments.map((comment) => (
-            <li
-              key={comment.id}
-              className="border p-3 rounded-md bg-gray-50"
-            >
-              <strong className="text-gray-800">
-                {comment.user?.username || "Anonymous"}:
-              </strong>{" "}
-              {comment.text}
-            </li>
-          ))}
-        </ul>
-
-        {/* Add Comment */}
-        {user ? (
-          <>
-            {!showCommentBox && (
-              <button
-                onClick={() => setShowCommentBox(true)}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-              >
-                Add Comment
-              </button>
-            )}
-
-            {showCommentBox && (
-              <div className="mt-4 flex flex-col gap-2">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Write your comment..."
-                  className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  rows={4}
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleAddComment}
-                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-                  >
-                    Post Comment
-                  </button>
-                  <button
-                    onClick={() => setShowCommentBox(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="mt-4 text-gray-600">
-            Please <a href="/login" className="text-blue-600 underline">login</a> to comment.
-          </p>
-        )}
-      </section>
+      {/* If content is rich HTML from Strapi, render as HTML */}
+      <div className="text-lg mb-10 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: article.content }} />
     </main>
   );
 }
