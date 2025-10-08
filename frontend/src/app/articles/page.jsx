@@ -1,17 +1,14 @@
 import ArticleList from "@/components/ArticleList";
 import { draftMode } from 'next/headers'; // Next.js server function for Draft Mode
 
-// Fetch articles, checking for Draft Mode to include unpublished drafts
 async function getArticles() {
-  const { isEnabled } = await draftMode(); // Check if Draft Mode is active
-  
-  // 'live' is the default (published only). 'preview' includes published and draft content.
+  const { isEnabled } = await draftMode();
+
   const publicationState = isEnabled ? 'preview' : 'live';
 
   const queryString = new URLSearchParams({
       'filters[isApproved][$eq]': 'true',
       'populate': '*',
-      // Tell Strapi which content to return
       'publicationState': publicationState, 
   }).toString();
   
@@ -19,7 +16,6 @@ async function getArticles() {
     const res = await fetch(
       `http://localhost:1337/api/articles?${queryString}`,
       {
-        // Bypass cache when in preview mode to always get the latest draft
         cache: isEnabled ? 'no-store' : 'force-cache',
       }
     );
@@ -44,7 +40,6 @@ export default async function ArticlesPage() {
           Latest Articles
         </h1>
         {articles.length > 0 ? (
-          // The ArticleList component is unchanged, it just renders the data
           <ArticleList articles={articles} />
         ) : (
           <p className="text-center text-gray-600">

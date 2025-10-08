@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation"; // Next.js router
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 export default function Signup() {
   const router = useRouter();

@@ -66,7 +66,7 @@ module.exports = ({ env }) => ({
           // 'secret' authenticates the request to Next.js
           secret: previewSecret,
           // Pass the slug again, as Next.js will use it for redirection (as defined in the previous response)
-          slug: document.slug
+          slug: documentId
         });
 
         // Return the full URL that the Strapi button will open

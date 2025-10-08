@@ -5,56 +5,40 @@ import { useQuery } from "@apollo/client/react";
 import { GET_NAVBAR_LINKS } from "@/queries/navbar";
 import { useRouter } from "next/navigation";
 
-
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const router = useRouter();
 
+  const loadUserFromStorage = () => {
+    const storedUser = localStorage.getItem("user") || localStorage.getItem("strapi_user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+    else setUser(null);
+  };
+
   useEffect(() => {
-    const loadUserFromStorage = () => {
-      const storedUser = localStorage.getItem("user");
-      setUser(storedUser ? JSON.parse(storedUser) : null);
-    };
+    // Load user initially
+    loadUserFromStorage();
 
-    // Handle token from URL
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    if (token) {
-      localStorage.setItem("jwt", token);
+    // Listen for login/logout events
+    const handleAuthChange = () => loadUserFromStorage();
+    window.addEventListener("authChange", handleAuthChange);
 
-      fetch("http://localhost:1337/api/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(res => res.json())
-        .then(userData => {
-          localStorage.setItem("user", JSON.stringify(userData));
-          setUser(userData);
-          window.history.replaceState({}, "", window.location.pathname);
-        });
-    } else {
-      loadUserFromStorage();
-    }
-
-    // Listen for storage changes in other tabs
-    const handleStorage = (event) => {
-      if (event.key === "user" || event.key === "jwt") loadUserFromStorage();
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    return () => window.removeEventListener("authChange", handleAuthChange);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("jwt");
+    localStorage.removeItem("strapi_jwt");
     localStorage.removeItem("user");
-    
+    localStorage.removeItem("strapi_user");
     setUser(null);
-    router.push("/"); 
+    window.dispatchEvent(new Event("authChange")); // notify other tabs/components
+    router.push("/");
   };
 
   const handleGoogleSignup = () => {
-  const callbackUrl = encodeURIComponent("http://localhost:3000");
-  window.location.href = `http://localhost:1337/api/connect/google?callbackUrl=${callbackUrl}`;
-};
+    window.location.href = "http://localhost:1337/api/connect/google";
+  };
 
   const btnStyle = {
     background: "#ff6600",
@@ -73,7 +57,7 @@ export default function Navbar() {
   return (
     <nav style={navStyle}>
       <h1 style={{ fontSize: "1.8rem" }}>MyWebsite</h1>
-      <div>
+      <div style={{ display: "flex", alignItems: "center" }}>
         {navLinks.map((link, idx) => (
           <Link key={idx} href={link.url} style={{ margin: "0 10px" }}>
             {link.label}
@@ -98,7 +82,6 @@ export default function Navbar() {
             </button>
           </>
         )}
-
       </div>
 
       {loading && <p>Loading...</p>}

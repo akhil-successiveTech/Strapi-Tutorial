@@ -5,9 +5,10 @@ export function createApolloClient() {
 
   return new ApolloClient({
     link: new HttpLink({
-      uri: "http://localhost:1337/graphql",
+      uri: "/api/graphql",
+      fetchOptions: { cache: "no-store" },
       headers: {
-        Authorization: token ? `Bearer ${token}` : "",
+        Authorization: token ? token : "",
       },
     }),
     cache: new InMemoryCache(),

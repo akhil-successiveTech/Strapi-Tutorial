@@ -3,6 +3,7 @@ import "./globals.css";
 import ApolloProviderWrapper from "@/components/ApolloProviderWrapper";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +23,26 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Google Analytics */}
+        <Script
+          strategy="lazyOnload" //Improve performance
+          src={`https://www.googletagmanager.com/gtag/js?id=G-17MBXCBQC9`}
+        />
+        <Script
+          id="google-analytics"
+          strategy="lazyOnload"
+        >
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-17MBXCBQC9', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
