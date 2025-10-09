@@ -1,97 +1,83 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { createApolloClient } from "../../../../lib/apollo";
+import { GET_ARTICLE_BY_SLUG } from "@/queries/article";
 
-const API_URL = "http://localhost:1337/api";
+const client = createApolloClient();
 
-export default function ArticleDetailPage() {
-  const { slug } = useParams();
-  const searchParams = useSearchParams();
-  const previewSecret = searchParams.get("preview_secret");
-  const isPreview = previewSecret === process.env.NEXT_PUBLIC_PREVIEW_SECRET;
+export default async function ArticleDetailPage({ params }) {
+  const { slug } = await params;
+  console.log("Slug:", slug);
 
-  const [article, setArticle] = useState(null);
-  const [loading, setLoading] = useState(true);
+  try {
+    const { data } = await client.query({
+      query: GET_ARTICLE_BY_SLUG,
+      variables: { filters: { slug: { eq: slug } } },
+      fetchPolicy: "no-cache",
+    });
 
-  useEffect(() => {
-    if (!slug) return;
-    let aborted = false;
+    console.log("Data:", data);
 
-    async function fetchArticle() {
-      try {
-        const params = new URLSearchParams();
-        params.set("filters[slug][$eq]", slug);
-        // populate image fully and comments -> user (optional)
-        params.set("populate[image]", "*");
-        params.set("populate[comments][populate]", "user");
+    const articleData = data?.articles?.[0];
 
-        if (!isPreview) {
-          params.set("filters[isApproved][$eq]", "true");
-        }
-
-        const url = `${API_URL}/articles?${params.toString()}`;
-        console.log("Fetching article URL:", url);
-
-        const res = await fetch(url);
-        const data = await res.json();
-        console.log("Strapi response:", data);
-
-        if (aborted) return;
-
-        if (!data?.data || data.data.length === 0) {
-          setArticle(null);
-          setLoading(false);
-          return;
-        }
-
-        const artData = data.data[0];
-        const imagePath = artData.attributes.image?.data?.attributes?.url || null;
-
-        setArticle({
-          id: artData.id,
-          slug: artData.attributes.slug,
-          title: artData.attributes.title,
-          // If using Rich Text (Strapi WYSIWYG), use innerHTML below
-          content: artData.attributes.content,
-          image: imagePath,
-        });
-
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching article:", err);
-        if (!aborted) setLoading(false);
-      }
+    if (!articleData) {
+      return (
+        <p className="text-center mt-10 text-red-500">
+          Article not found.
+        </p>
+      );
     }
 
-    fetchArticle();
-    return () => {
-      aborted = true;
-    };
-  }, [slug, isPreview]);
+    const imgSrc = articleData.coverImage?.url
+      ? articleData.coverImage.url.startsWith("http")
+        ? articleData.coverImage.url
+        : `http://localhost:1337${articleData.coverImage.url}`
+      : null;
 
-  if (loading) return <p className="text-center mt-10 text-gray-500">Loading...</p>;
-  if (!article) return <p className="text-center mt-10 text-red-500 text-xl">Article not found.</p>;
+    return (
+      <main className="max-w-4xl mx-auto p-6">
+        <h1 className="text-4xl font-bold mb-4">{articleData.title}</h1>
 
-  const imgSrc = article.image
-    ? article.image.startsWith("http")
-      ? article.image
-      : `http://localhost:1337${article.image}`
-    : null;
+        {imgSrc && (
+          <img
+            src={imgSrc}
+            alt={articleData.title}
+            className="w-full max-h-96 object-cover rounded-lg mb-6"
+          />
+        )}
 
-  return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
-
-      {imgSrc && (
-        <img
-          src={imgSrc}
-          alt={article.title}
-          className="w-full max-h-96 object-cover rounded-lg mb-6"
+        <div
+          className="text-lg mb-10 whitespace-pre-line"
+          dangerouslySetInnerHTML={{ __html: articleData.content }}
         />
-      )}
 
-      {/* If content is rich HTML from Strapi, render as HTML */}
-      <div className="text-lg mb-10 whitespace-pre-line" dangerouslySetInnerHTML={{ __html: article.content }} />
-    </main>
-  );
+        {/* ✅ Comments Section */}
+        {articleData.comments && articleData.comments.length > 0 ? (
+          <section className="mt-12 border-t pt-6">
+            <h2 className="text-2xl font-semibold mb-4">Comments</h2>
+            <div className="space-y-4">
+              {articleData.comments.map((comment, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-gray-50 border rounded-lg shadow-sm"
+                >
+                  <p className="text-gray-800">{comment.content}</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    {new Date(comment.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <p className="text-gray-500 mt-10">No comments yet.</p>
+        )}
+      </main>
+    );
+  } catch (err) {
+    console.error("Error fetching article:", err);
+    return (
+      <p className="text-center mt-10 text-red-500">
+        Failed to load article.
+      </p>
+    );
+  }
 }

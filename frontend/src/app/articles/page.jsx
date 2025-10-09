@@ -7,22 +7,26 @@ async function getArticles() {
   const publicationState = isEnabled ? 'preview' : 'live';
 
   const queryString = new URLSearchParams({
-      'filters[isApproved][$eq]': 'true',
-      'populate': '*',
-      'publicationState': publicationState, 
+    'populate': '*',
+    'publicationState': publicationState,
   }).toString();
   
   try {
-    const res = await fetch(
-      `http://localhost:1337/api/articles?${queryString}`,
-      {
-        cache: isEnabled ? 'no-store' : 'force-cache',
-      }
-    );
+    const baseUrl = "http://localhost:1337/api/articles";
+
+    const params = new URLSearchParams({
+      populate: "*",
+      publicationState: isEnabled ? "preview" : "live",
+      "filters[isApproved][$eq]": true,
+    });
+
+    const url = `${baseUrl}?${params.toString()}`;
+    console.log("Fetching articles:", url);
+
+    const res = await fetch(url, { cache: "no-store" }); // or { next: { revalidate: 60 } } for production
+    const data = await res.json();
 
     if (!res.ok) throw new Error(`Failed to fetch articles. Status: ${res.status}`);
-
-    const data = await res.json();
     return data.data || [];
   } catch (err) {
     console.error("Error fetching articles:", err);

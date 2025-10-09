@@ -5,7 +5,7 @@ export function createApolloClient() {
 
   return new ApolloClient({
     link: new HttpLink({
-      uri: "/api/graphql",
+      uri: "http://localhost:1337/graphql",
       fetchOptions: { cache: "no-store" },
       headers: {
         Authorization: token ? token : "",
