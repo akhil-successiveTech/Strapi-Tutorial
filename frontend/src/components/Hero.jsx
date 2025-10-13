@@ -1,82 +1,53 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function Hero() {
+  const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    setIsClient(true); // ✅ ensures this runs only on client
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  // Default values for the hero section
+  // ✅ Prevent mismatch: render nothing until client-side mount
+  if (!isClient) return null;
+
+  // Default hero content
   const title = "Welcome to MyWebsite";
   const subtitle =
     "Discover amazing articles, tutorials, and resources to boost your knowledge and skills.";
   const imageUrl =
-    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80"; // sample background image
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80";
 
   return (
-    <section
-      style={{
-        position: "relative",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-        minHeight: "calc(100vh - 120px)",
-        padding: "0 20px",
-        backgroundImage: `url(${imageUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        color: "#fff",
-      }}
-    >
-      {/* Dark overlay for text readability */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          backgroundColor: "rgba(0,0,0,0.5)",
-          zIndex: 1,
-        }}
+    <section className="relative flex items-center justify-center text-center min-h-[calc(100vh-120px)] px-5 text-white overflow-hidden">
+      <Image
+        src={imageUrl}
+        alt="Hero background"
+        fill
+        priority
+        quality={75}
+        sizes="100vw"
+        className="object-cover"
       />
 
-      {/* Hero content */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          maxWidth: "900px",
-          margin: "0 auto",
-        }}
-      >
-        <h1 style={{ fontSize: "3rem", marginBottom: "20px", lineHeight: 1.2 }}>
+      <div className="absolute inset-0 bg-black/50 z-10" />
+
+      <div className="relative z-20 max-w-3xl mx-auto">
+        <h1 className="text-4xl sm:text-6xl font-bold mb-5 leading-tight">
           {title}
         </h1>
-        <p style={{ fontSize: "1.5rem", marginBottom: "40px", lineHeight: 1.5 }}>
+        <p className="text-lg sm:text-2xl mb-10 leading-relaxed text-gray-200">
           {subtitle}
         </p>
 
-        {/* Only Get Started button */}
         {user && (
           <Link href="/articles/new">
-            <button
-              style={{
-                padding: "15px 30px",
-                fontSize: "1.2rem",
-                borderRadius: "5px",
-                border: "none",
-                background: "#ff6600",
-                color: "#fff",
-                cursor: "pointer",
-                fontWeight: 600,
-              }}
-            >
+            <button className="px-6 py-3 text-lg rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold transition-colors">
               Get Started
             </button>
           </Link>

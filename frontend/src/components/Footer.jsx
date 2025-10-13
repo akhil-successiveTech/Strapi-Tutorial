@@ -7,22 +7,25 @@ import { GET_FOOTER } from "@/queries/footer";
 export default function Footer() {
   const { data, loading, error } = useQuery(GET_FOOTER, { createApolloClient });
 
-  if (loading) return <footer style={footerStyle}><p>Loading footer...</p></footer>;
-  if (error) return <footer style={footerStyle}><p>Error loading footer</p></footer>;
+  if (loading)
+    return (
+      <footer className="w-full bg-black text-white py-6 text-center">
+        <p className="text-sm sm:text-base">Loading footer...</p>
+      </footer>
+    );
 
-  // ✅ Correct path: homePage.footer.text
+  if (error)
+    return (
+      <footer className="w-full bg-black text-white py-6 text-center">
+        <p className="text-sm sm:text-base">Error loading footer</p>
+      </footer>
+    );
+
   const footerText = data?.homePage?.footer || "";
 
   return (
-    <footer style={footerStyle}>
-      <p>{footerText}</p>
+    <footer className="w-full bg-black text-white py-6 text-center">
+      <p className="text-sm sm:text-base">{footerText}</p>
     </footer>
   );
 }
-
-const footerStyle = {
-  padding: "20px",
-  textAlign: "center",
-  background: "#222",
-  color: "#fff",
-};

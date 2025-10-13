@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -20,7 +21,6 @@ export default function CommentPage({ params }) {
     if (jwt) {
       try {
         const payload = JSON.parse(atob(jwt.split(".")[1]));
-        console.log("Decoded JWT payload:", payload); // ✅ debug username
         setUsername(payload.username || payload.email || "Anonymous");
       } catch (err) {
         console.error("Error decoding JWT:", err);
@@ -38,13 +38,13 @@ export default function CommentPage({ params }) {
     setLoading(true);
 
     try {
-      // Fetch article ID from slug
-      const articleRes = await fetch(`http://localhost:1337/api/articles?filters[slug][$eq]=${slug}`);
+      const articleRes = await fetch(
+        `http://localhost:1337/api/articles?filters[slug][$eq]=${slug}`
+      );
       const articleData = await articleRes.json();
-      const articleId = articleData.data?.[0]?.id;
+      const articleId = articleData?.[0]?.id;
       if (!articleId) throw new Error("Article not found.");
 
-      // Post the comment
       const res = await fetch("http://localhost:1337/api/comments", {
         method: "POST",
         headers: {
@@ -55,16 +55,19 @@ export default function CommentPage({ params }) {
           data: {
             content: comment,
             article: articleId,
-            // author field is optional if JWT is used
+            username,
+            isApproved: false,
           },
         }),
       });
 
       if (!res.ok) throw new Error("Failed to post comment.");
 
-      alert(`Comment posted successfully as ${username}!`);
+      alert(
+        "Comment submitted successfully! It will appear once approved by the admin."
+      );
       setComment("");
-      router.push(`/articles/${slug}#comments`);
+      router.push(`/articles`);
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -75,31 +78,42 @@ export default function CommentPage({ params }) {
 
   if (!user) {
     return (
-      <div style={{ padding: "50px 20px", textAlign: "center" }}>
-        <p>Please <a href="/login">login</a> to post a comment.</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
+        <p className="text-base sm:text-lg text-gray-700">
+          Please{" "}
+          <a href="/login" className="text-blue-600 hover:underline font-medium">
+            login
+          </a>{" "}
+          to post a comment.
+        </p>
       </div>
     );
   }
 
   return (
-    <main style={{ maxWidth: "600px", margin: "50px auto", padding: "20px" }}>
-      <h2>Post a Comment</h2>
-      <p>Posting as: <strong>{username}</strong></p> {/* ✅ show username */}
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+    <main className="max-w-xl mx-auto my-12 px-4 sm:px-6">
+      <h2 className="text-2xl sm:text-3xl font-semibold mb-4 text-gray-900 text-center">
+        Post a Comment
+      </h2>
+      <p className="text-gray-600 mb-6 text-center">
+        Posting as: <span className="font-medium text-gray-900">{username}</span>
+      </p>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <textarea
           placeholder="Write your comment here..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={6}
           required
-          style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-sm sm:text-base resize-none"
         />
         <button
           type="submit"
-          style={{ padding: "12px", borderRadius: "5px", border: "none", background: "#0070f3", color: "#fff", cursor: "pointer" }}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-70"
           disabled={loading}
         >
-          {loading ? "Posting..." : "Post Comment"}
+          {loading ? "Posting..." : "Submit for Approval"}
         </button>
       </form>
     </main>
