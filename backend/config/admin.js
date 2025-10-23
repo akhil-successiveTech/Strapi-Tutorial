@@ -5,7 +5,7 @@ const PREVIEW_ALLOWED_UIDS = {
 };
 
 module.exports = ({ env }) => {
-  const CLIENT_URL = env('CLIENT_URL');
+  const CLIENT_URL = env('FRONTEND_URL');
   const PREVIEW_SECRET = env('PREVIEW_SECRET');
 
   return {
@@ -25,28 +25,27 @@ module.exports = ({ env }) => {
         allowedOrigins: [CLIENT_URL],
 
         async handler(uid, { documentId, locale, status }) {
-          // Check if UID is allowed
+          // ✅ Check if this UID supports preview
           const getPathname = PREVIEW_ALLOWED_UIDS[uid];
           if (!getPathname) return null;
 
-          // Fetch only required fields
-          const document = await strapi.db.query(uid).findOne({
-            where: { id: documentId },
-            select: ['slug'],
-          });
+          // ✅ Use the official Strapi v5 document API (required for preview button)
+          const document = await strapi.documents(uid).findOne({ documentId });
 
+          // ✅ Validate that the document exists and has a slug
           if (!document || !document.slug) return null;
 
-          // Generate preview path
+          // ✅ Build the frontend pathname
           const pathname = getPathname(document);
 
-          // Return full URL
+          // ✅ Create the full preview URL
           const urlSearchParams = new URLSearchParams({
             url: pathname,
             secret: PREVIEW_SECRET,
             slug: document.slug,
           });
 
+          // ✅ Return the final preview URL
           return `${CLIENT_URL}/api/preview?${urlSearchParams}`;
         },
       },

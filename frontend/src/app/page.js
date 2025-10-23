@@ -1,17 +1,20 @@
 "use client";
 import { useQuery } from "@apollo/client/react";
+// Add token to requests
 import { createApolloClient } from "../../lib/apollo";
+// GraphQL query
 import { GET_HOME_PAGE } from "@/queries/homePage.js";
 import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
-import Head from "next/head"; // ✅ import Head for preload
-
+import Head from "next/head"; // Preloads for better performance
+// Loads body section client side
 const BodySection = dynamic(() => import("@/components/BodySection"), { ssr: false });
 
 // Create Apollo client only once
 const client = createApolloClient();
 
 export default function HomePage() {
+  // Uses cached data to check and then fetch
   const { data, loading, error } = useQuery(GET_HOME_PAGE, { client, fetchPolicy: "cache-first" });
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;

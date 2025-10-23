@@ -23,7 +23,7 @@ async function getArticles() {
     const url = `${baseUrl}?${params.toString()}`;
     console.log("Fetching articles:", url);
 
-    const res = await fetch(url, { cache: "no-store" }); // or { next: { revalidate: 60 } } for production
+    const res = await fetch(url, { cache: "no-store" });
     const data = await res.json();
 
     if (!res.ok) throw new Error(`Failed to fetch articles. Status: ${res.status}`);
